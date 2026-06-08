@@ -242,7 +242,13 @@ jobs:
         run: echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
 
       - name: Setup backend, frontend, and playwright tests
-        run: 'parallel --line-buffer --tagstring "[{#}]:" ::: "cd content-sources-frontend && yarn install --frozen-lockfile --cache-folder .yarn_cache_frontend && yarn build && yarn playwright install chromium --only-shell"  "make compose-down compose-clean compose-up" "yarn install --frozen-lockfile --cache-folder .yarn_cache_backend && yarn playwright install chromium --only-shell"'
+        run: 'parallel --line-buffer --tagstring "[{#}]:" ::: "cd content-sources-frontend && yarn install --frozen-lockfile --cache-folder .yarn_cache_frontend && yarn build"  "make compose-down compose-clean compose-up"  "yarn install --frozen-lockfile --cache-folder .yarn_cache_backend"'
+
+      - name: Install Playwright browsers
+        run: |
+          rm -rf "${HOME}/.cache/ms-playwright/__dirlock"
+          yarn playwright install chromium --only-shell
+          cd content-sources-frontend && yarn playwright install chromium --only-shell
 
       - name: Update /etc/hosts
         working-directory: content-sources-frontend
